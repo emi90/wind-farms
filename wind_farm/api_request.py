@@ -1,11 +1,12 @@
 from urllib.parse import urlencode
-from urllib.request import urlretrieve
+import requests
+import pandas as pd
 
 BASE_URL = "http://history.openweathermap.org/data/2.5/history/city"
 API_KEY = open("api_key.txt").read()
 
 
-def get_history_weather(params):
+def get_api_request(params):
     """
     Call OpenWeatherMap historical weather API by coordinates
     Returns JSON file
@@ -19,7 +20,32 @@ def get_history_weather(params):
 
     query_str = urlencode(query_dict)
 
-    api_request = urlretrieve(BASE_URL, query_str)
+    api_request = requests.get(BASE_URL, query_str)
 
-    return api_request
+    return api_request.json()
 
+
+def get_weather_history(params):
+    """
+    Extracts wind speed/direction data from JSON file
+    Returns dataframe
+    """
+
+    weather_json = get_api_request(params)
+
+    df = pd.DataFrame(data = weather_json["list"])
+
+    df_return = pd.DataFrame(data = df["dt"])
+
+    for col in df.columns[1:]:
+        if isinstance(df[col][0], dict):
+            temp_df = df[col].apply(pd.Series)
+        elif isinstance(df[col][0], list):
+            temp_df = df[col].apply(pd.Series)[0].apply(pd.Series)
+        else:
+            temp_df = df[col]
+        df_return = df_return.join(temp_df)
+
+    df_return["city_id"] = weather_json["city_id"]
+
+    return df_return
