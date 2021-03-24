@@ -3,10 +3,9 @@ import requests
 import pandas as pd
 
 BASE_URL = "http://history.openweathermap.org/data/2.5/history/city"
-API_KEY = open("api_key.txt").read()
 
 
-def get_api_request(params):
+def get_api_request(api_key, params):
     """
     Call OpenWeatherMap historical weather API by coordinates
     Returns JSON file
@@ -16,7 +15,7 @@ def get_api_request(params):
                   "type": "hour",
                   "start": params["start"],
                   "end": params["end"],
-                  "appid": API_KEY}
+                  "appid": api_key}
 
     query_str = urlencode(query_dict)
 
@@ -25,17 +24,17 @@ def get_api_request(params):
     return api_request.json()
 
 
-def get_weather_history(params):
+def get_weather_history(api_key, params):
     """
     Extracts wind speed/direction data from JSON file
     Returns dataframe
     """
 
-    weather_json = get_api_request(params)
+    weather_json = get_api_request(api_key, params)
 
-    df = pd.DataFrame(data = weather_json["list"])
+    df = pd.DataFrame(data=weather_json["list"])
 
-    df_return = pd.DataFrame(data = df["dt"])
+    df_return = pd.DataFrame(data=df["dt"])
 
     for col in df.columns[1:]:
         if isinstance(df[col][0], dict):
