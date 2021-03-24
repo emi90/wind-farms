@@ -1,5 +1,9 @@
 import numpy as np
 
+"""
+Source: https://www.omnicalculator.com/physics/air-density#how-to-calculate-the-air-density
+"""
+
 
 def get_air_pressure(alt, temp):
     """
